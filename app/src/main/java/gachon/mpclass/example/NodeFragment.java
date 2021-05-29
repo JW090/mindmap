@@ -6,6 +6,8 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -25,9 +27,16 @@ import android.widget.TextView;
 public class NodeFragment extends Fragment {
 
     public Node node;
+    public Runnable onAddToLayout;
 
     private ImageButton btn_node,starting_btn;
     private TextView node_text;
+
+    private boolean root = false;
+
+    private NodeFragment fragment;
+    private Mindmap act;
+
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -43,6 +52,16 @@ public class NodeFragment extends Fragment {
     }
 
     public NodeFragment(Mindmap mindmap, String text) {
+
+        this.node = new Node(this,text);
+        this.act = mindmap;
+    }
+
+    public NodeFragment(Mindmap mindmap, Node node){
+        this.node = node;
+        this.node.fragment = this;
+
+        this.act = mindmap;
     }
 
     /**
@@ -72,20 +91,46 @@ public class NodeFragment extends Fragment {
         }
     }
 
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_node,container,false);
 
         btn_node = rootView.findViewById(R.id.node_img);
-        starting_btn = rootView.findViewById(R.id.btn_start);
+        node_text = rootView.findViewById(R.id.data);
+
+        String text = node_text.getText().toString();
+
+        btn_node.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                act.add_Node(fragment, text);
+
+            }
+        });
 
         registerForContextMenu(btn_node);
+
+        btn_node.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                return false;
+            }
+        });
+
 
         // Inflate the layout for this fragment
         return rootView;
 
 
+    }
+
+    // 루트 노드로 만듬
+    public void makeRoot()
+    {
+        root = true;
     }
 
     //수정삭제메뉴
@@ -100,12 +145,13 @@ public class NodeFragment extends Fragment {
 
     }
 
+
     public boolean onContextItemSelected(@NonNull MenuItem item){
 
         switch (item.getItemId()){
-            case R.id.edit:
+            case R.id.edit: get_edit_text();
             return true;
-            case R.id.remove: remove_text();
+            case R.id.remove: act.remove_node(this);
             return true;
         }
         return false;
@@ -125,28 +171,23 @@ public class NodeFragment extends Fragment {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 String edit = editText.getText().toString();
+
+                node_text.setText(edit);
+
                 edit_text(edit);
+
             }
         });
     }
-
-
-
 
 
     //텍스트 수정
     public void edit_text(String edit){
 
         node.data = edit;
-        this.node_text.setText(edit);
 
     }
 
-    //텍스트 삭제
-    public void remove_text(){
-        node.data = null;
-        this.node_text.setText(null);
-    }
 
 
 }

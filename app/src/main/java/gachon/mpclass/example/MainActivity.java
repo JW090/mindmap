@@ -34,10 +34,8 @@ public class MainActivity extends AppCompatActivity {
 
                 String str = starting_text.getText().toString();
 
-                starting_text.setClickable(false);
-                starting_text.setFocusable(false);
-
                 Intent intent = new Intent(getApplicationContext(),Mindmap.class);
+                intent.putExtra("starting",str);
                 startActivity(intent);
 
 
