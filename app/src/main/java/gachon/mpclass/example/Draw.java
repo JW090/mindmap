@@ -2,6 +2,7 @@ package gachon.mpclass.example;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -15,7 +16,7 @@ public class Draw extends View {
     public Draw(Mindmap context) {
         super(context);
 
-        paint.setColor(Color.GRAY);
+        paint.setColor(Color.BLACK);
         paint.setStrokeWidth(10);
 
         activity = context;
@@ -24,6 +25,7 @@ public class Draw extends View {
 
     //x좌표 구하기
     private static int getRelative_x(View view) {
+
         if (view.getParent() == view.getRootView())
             return view.getLeft();
         else
@@ -39,7 +41,7 @@ public class Draw extends View {
     }
 
     //노드 선으로 연결하기
-    private void connet_node(Canvas canvas, NodeFragment fragment) {
+    private void connect_node(Canvas canvas, NodeFragment fragment) {
 
         int barHeight = activity.getBarsHeight();
 
@@ -82,14 +84,15 @@ public class Draw extends View {
 
             canvas.drawLine(parentLocation[0], parentLocation[1] - barHeight, childLocation[0], childLocation[1] - barHeight, paint);
 
-            connet_node(canvas, child.fragment);
+            connect_node(canvas, child.fragment);
 
         }
     }
 
     public void onDraw(Canvas canvas) {
         if (activity.getNodeFragments().size() > 0) {
-            connet_node(canvas, activity.getNodeFragments().get(0));
+
+            connect_node(canvas, activity.getNodeFragments().get(0));
         }
         invalidate();
     }

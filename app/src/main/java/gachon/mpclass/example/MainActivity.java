@@ -7,16 +7,16 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.Toast;
+
+import com.google.firebase.database.DatabaseReference;
 
 public class MainActivity extends AppCompatActivity {
 
     ImageButton start_mindmap;
     EditText starting_text;
 
-    Mindmap mp;
-
-    NodeFragment first;
-
+    Mindmap act;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,13 +35,15 @@ public class MainActivity extends AppCompatActivity {
                 String str = starting_text.getText().toString();
 
                 Intent intent = new Intent(getApplicationContext(),Mindmap.class);
-                intent.putExtra("starting",str);
+                intent.putExtra("start",str);
                 startActivity(intent);
 
 
             }
         });
 
-
     }
+
+
+
 }

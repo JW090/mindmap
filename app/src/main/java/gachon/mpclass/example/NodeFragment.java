@@ -5,10 +5,12 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import android.text.InputType;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
@@ -18,6 +20,12 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
+
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -29,13 +37,17 @@ public class NodeFragment extends Fragment {
     public Node node;
     public Runnable onAddToLayout;
 
-    private ImageButton btn_node,starting_btn;
+    private ImageButton btn_node,btn_start;
     private TextView node_text;
 
     private boolean root = false;
 
     private NodeFragment fragment;
     private Mindmap act;
+
+    private MindmapData mdata;
+
+    private String temp;
 
 
     // TODO: Rename parameter arguments, choose names that match
@@ -49,6 +61,7 @@ public class NodeFragment extends Fragment {
 
     public NodeFragment() {
         // Required empty public constructor
+        node = new Node( this, "unknown");
     }
 
     public NodeFragment(Mindmap mindmap, String text) {
@@ -99,17 +112,46 @@ public class NodeFragment extends Fragment {
 
         btn_node = rootView.findViewById(R.id.node_img);
         node_text = rootView.findViewById(R.id.data);
-
-        String text = node_text.getText().toString();
+        /*btn_start = rootView.findViewById(R.id.btn_mind_root);*/
 
         btn_node.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                act.add_Node(fragment, text);
+                androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(act);
+                builder.setTitle("단어 입력");
+
+                final EditText input = new EditText(act);
+                input.setInputType(InputType.TYPE_CLASS_TEXT);
+                builder.setView(input);
+
+                builder.setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                        String temp = input.getText().toString();
+                        MindmapData mdata = new MindmapData();
+                        mdata.text_data = temp;
+                        mdata.id = FirebaseDatabase.getInstance().getReference().child("Mindmap").push().getKey();
+
+                        FirebaseDatabase.getInstance().getReference().child("Mindmap").child(mdata.id).setValue(mdata);
+                        act.add_Node(fragment,temp);
+                        node_text.setText(temp);
+                    }
+                });
+                builder.setNegativeButton("취소", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+
+                builder.show();
 
             }
         });
+
+        setNode(temp);
 
         registerForContextMenu(btn_node);
 
@@ -121,11 +163,14 @@ public class NodeFragment extends Fragment {
         });
 
 
+
         // Inflate the layout for this fragment
         return rootView;
 
 
     }
+
+
 
     // 루트 노드로 만듬
     public void makeRoot()
@@ -139,7 +184,7 @@ public class NodeFragment extends Fragment {
         super.onCreateContextMenu(menu,v,menuInfo);
 
         MenuInflater mi = getActivity().getMenuInflater();
-        if(v==btn_node||v==starting_btn){
+        if(v==btn_node){
             mi.inflate(R.menu.node_menu,menu);
         }
 
@@ -157,27 +202,36 @@ public class NodeFragment extends Fragment {
         return false;
     }
 
-    MainActivity activity;
-
     //수정누르면 텍스트 팝업으로 입력받기
     public void get_edit_text(){
 
-        AlertDialog.Builder alert = new AlertDialog.Builder(activity);
+        androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(act);
+        builder.setTitle("단어 입력");
 
-        final EditText editText = new EditText(activity);
-        alert.setView(editText);
+        final EditText input = new EditText(act);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        builder.setView(input);
 
-        alert.setPositiveButton("ok", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton("확인", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                String edit = editText.getText().toString();
 
+                String edit = input.getText().toString();
                 node_text.setText(edit);
 
                 edit_text(edit);
 
             }
         });
+        builder.setNegativeButton("취소", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
+
     }
 
 
@@ -185,6 +239,15 @@ public class NodeFragment extends Fragment {
     public void edit_text(String edit){
 
         node.data = edit;
+        node_text.setText(edit);
+
+    }
+
+    //텍스트 설정
+    public void setNode( String text){
+
+        node.data = text;
+        node_text.setText(text);
 
     }
 
