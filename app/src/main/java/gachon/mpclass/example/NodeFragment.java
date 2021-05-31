@@ -20,6 +20,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -61,12 +62,12 @@ public class NodeFragment extends Fragment {
 
     public NodeFragment() {
         // Required empty public constructor
-        node = new Node( this, "unknown");
+        node = new Node( this, "unknown","id");
     }
 
-    public NodeFragment(Mindmap mindmap, String text) {
+    public NodeFragment(Mindmap mindmap, String text,String id) {
 
-        this.node = new Node(this,text);
+        this.node = new Node(this,text,id);
         this.act = mindmap;
     }
 
@@ -135,8 +136,8 @@ public class NodeFragment extends Fragment {
                         mdata.id = FirebaseDatabase.getInstance().getReference().child("Mindmap").push().getKey();
 
                         FirebaseDatabase.getInstance().getReference().child("Mindmap").child(mdata.id).setValue(mdata);
-                        act.add_Node(fragment,temp);
-                        node_text.setText(temp);
+                       // act.add_Node(fragment,temp);
+                      //  node_text.setText(temp);
                     }
                 });
                 builder.setNegativeButton("취소", new DialogInterface.OnClickListener() {
@@ -147,6 +148,45 @@ public class NodeFragment extends Fragment {
                 });
 
                 builder.show();
+
+            }
+        });
+
+        FirebaseDatabase.getInstance().getReference().child("Mindmap").addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull  DataSnapshot snapshot, @Nullable String previousChildName) {
+
+                //새로추가된 값 가져오기
+                MindmapData mindmapData = snapshot.getValue(MindmapData.class);
+
+                /*String temp = mindmapData.text_data;
+
+                Toast.makeText(act,temp,Toast.LENGTH_SHORT).show();
+                act.add_Node(fragment,temp);
+
+                setNode(temp);*/
+
+            }
+
+            @Override
+            public void onChildChanged(@NonNull  DataSnapshot snapshot, @Nullable String previousChildName) {
+
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot snapshot) {
+
+                act.remove_node(fragment);
+
+            }
+
+            @Override
+            public void onChildMoved(@NonNull  DataSnapshot snapshot, @Nullable String previousChildName) {
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
 
             }
         });
@@ -172,11 +212,6 @@ public class NodeFragment extends Fragment {
 
 
 
-    // 루트 노드로 만듬
-    public void makeRoot()
-    {
-        root = true;
-    }
 
     //수정삭제메뉴
     public void onCreateContextMenu(ContextMenu menu, View v,ContextMenu.ContextMenuInfo menuInfo){
@@ -194,9 +229,9 @@ public class NodeFragment extends Fragment {
     public boolean onContextItemSelected(@NonNull MenuItem item){
 
         switch (item.getItemId()){
-            case R.id.edit: get_edit_text();
+            case R.id.edit://get_edit_text();
             return true;
-            case R.id.remove: act.remove_node(this);
+            case R.id.remove: //act.remove_node(this);
             return true;
         }
         return false;
@@ -218,6 +253,7 @@ public class NodeFragment extends Fragment {
 
                 String edit = input.getText().toString();
                 node_text.setText(edit);
+
 
                 edit_text(edit);
 

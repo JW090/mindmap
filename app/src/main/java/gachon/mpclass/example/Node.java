@@ -15,6 +15,7 @@ public class Node {
     public Node root_Node;
     public int x_margin,y_margin;
     public int size =0;
+    public String node_id;
 
     public ArrayList<Node> child_node;
     public String data;
@@ -22,8 +23,9 @@ public class Node {
     public NodeFragment fragment;
 
 
-    public Node(NodeFragment fragment,String data){
+    public Node(NodeFragment fragment,String data,String node_id){
 
+        this.node_id = node_id;
         this.data = data;
         this.root_Node = null;
         this.child_node = new ArrayList<>();

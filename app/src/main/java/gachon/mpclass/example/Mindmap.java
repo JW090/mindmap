@@ -13,6 +13,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
@@ -29,7 +30,9 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -64,7 +67,8 @@ public class Mindmap extends AppCompatActivity {
     private String temp;
 
     private MindmapData mdata;
-    String id;
+    public String id;
+    public String key;
 
 
     //메인
@@ -77,9 +81,11 @@ public class Mindmap extends AppCompatActivity {
 
         randomFragmentMargins = new Random();
 
-        ViewGroup drawViewContainer = (ViewGroup)findViewById(R.id.draw_view_container);
+        /*//선연결
+        ViewGroup drawViewContainer = (ViewGroup)findViewById(R.id.node_container);
          draw = new Draw(this);
-         drawViewContainer.addView(draw);
+         drawViewContainer.addView(draw);*/
+
 
          final Mindmap mindmap = this;
 
@@ -94,7 +100,12 @@ public class Mindmap extends AppCompatActivity {
          String text = i.getStringExtra("start");
          str.setText(text);
 
+
+        /*mdata = (MindmapData) getIntent().getSerializableExtra("mdata");
+        id = mdata.id;*/
+
         mdata = new MindmapData();
+        key = mdata.id;
 
 
          btn_root.setOnClickListener(new View.OnClickListener() {
@@ -115,10 +126,9 @@ public class Mindmap extends AppCompatActivity {
 
                          mdata.text_data = temp;
                          mdata.id = FirebaseDatabase.getInstance().getReference().child("Mindmap").push().getKey();
-                         id = mdata.id;
 
                          FirebaseDatabase.getInstance().getReference().child("Mindmap").child(mdata.id).setValue(mdata);
-                         add_Node(fragment, temp);
+                         //add_Node(fragment, temp);
                      }
                  });
                  builder.setNegativeButton("취소", new DialogInterface.OnClickListener() {
@@ -132,6 +142,8 @@ public class Mindmap extends AppCompatActivity {
              }
          });
 
+
+
          registerForContextMenu(btn_root);
 
          btn_root.setOnLongClickListener(new View.OnLongClickListener() {
@@ -144,15 +156,19 @@ public class Mindmap extends AppCompatActivity {
          //데이터베이스 실시간 읽어오기
 
 
-        FirebaseDatabase.getInstance().getReference().child("Mindmap").child(id).addChildEventListener(new ChildEventListener() {
+        FirebaseDatabase.getInstance().getReference().child("Mindmap").addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull  DataSnapshot snapshot, @Nullable String previousChildName) {
 
                 //새로추가된 값 가져오기
                 MindmapData mindmapData = snapshot.getValue(MindmapData.class);
 
+                String temp = mindmapData.text_data;
 
+                Toast.makeText(getApplicationContext(),temp,Toast.LENGTH_SHORT).show();
+                add_Node(fragment,temp,key);
 
+               // node_text.setText(temp);
 
             }
 
@@ -163,6 +179,8 @@ public class Mindmap extends AppCompatActivity {
 
             @Override
             public void onChildRemoved(@NonNull DataSnapshot snapshot) {
+
+                remove_node(fragment);
 
             }
 
@@ -178,6 +196,8 @@ public class Mindmap extends AppCompatActivity {
         });
 
        }
+
+
 
 
     //수정삭저장메뉴
@@ -273,9 +293,9 @@ public class Mindmap extends AppCompatActivity {
     }
 
     //노드 추가
-    public NodeFragment add_Node(final NodeFragment parent, String text){
+    public NodeFragment add_Node(final NodeFragment parent, String text, String id){
 
-        final NodeFragment fragment = createNodeFragment(new NodeFragment(this,text));
+        final NodeFragment fragment = createNodeFragment(new NodeFragment(this,text,id));
 
         nodeFragments.add(fragment);
 
@@ -300,6 +320,8 @@ public class Mindmap extends AppCompatActivity {
 
             }
         };
+
+        //node_text.setText(text);
 
         return fragment;
 
@@ -330,13 +352,13 @@ public class Mindmap extends AppCompatActivity {
         return fragment;
     }
 
-    public NodeFragment createNodeFragmentHierarchy(Node root)
+  /*  public NodeFragment createNodeFragmentHierarchy(Node root)
     {
         NodeFragment rootFragment = _createNodeFragmentHierarchy(root);
         rootFragment.makeRoot();
 
         return rootFragment;
-    }
+    }*/
 
 
     //노드삭제
